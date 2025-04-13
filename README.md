@@ -62,3 +62,16 @@ When a folder is named with `_` as prefix, it will be ignored by the routing and
 Folders in parenthesis (Klammern) while not be show in the route. (https://nextjs.org/docs/app/getting-started/project-structure#organize-routes-without-affecting-the-url-path)
 
 Slugs can be defined by creating a folder in brackets [] like [slug].
+
+Basic tutorial: https://www.youtube.com/watch?v=__mSgDEOyv8
+
+By default the code is executed on the server. When you want to change this behavior the following has to be added to the top of the file:
+```tsx
+'use client';
+```
+
+
+## Upgrade to newer Next.js version
+```zsh
+npx @next/codemod@canary upgrade latest
+```

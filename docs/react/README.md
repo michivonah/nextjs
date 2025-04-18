@@ -180,7 +180,22 @@ function HomePage(){
 }
 ```
 
+## Migrate project from React to Next.js
+Install React & Next.js
+```zsh
+npm install react@latest react-dom@latest next@latest
+```
 
+Dependencies in package.json:
+```json
+{
+  "dependencies": {
+    "next": "^15.3.1",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  }
+}
+```
 
 ## Ressources
 - [React Foundations course from Next.js](https://nextjs.org/learn/react-foundations)

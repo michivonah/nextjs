@@ -70,6 +70,12 @@ By default the code is executed on the server. When you want to change this beha
 'use client';
 ```
 
+Its possible to render the most parts of an app on the server and some components, like the hover state of the navbar, on the client. Depending on what makes most sense for the application. Thoose components should be move to a separated JS or JSX file.
+
+The main function of the app or just a file is defined by `export default`.
+
+The layout of the app is defined in `layout.js`. The content of `layout.js` is shared between all pages.
+
 
 ## Upgrade to newer Next.js version
 ```zsh

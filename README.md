@@ -238,6 +238,84 @@ export default function Page() {
 
 The `width` and `height` should be specified to prevent layout shift - the values set are just used for defining the right aspect ratio - Next.js decides by itself which size has to be rendered.
 
+## Layouts
+In a `layout.tsx` file the layout of a page with all their subpages is defined. The files has to return a Layout component on the default function. The children should be imported and shown on the layout, else they won't be visible anywhere.
+
+Example `layout.tsx`
+```tsx
+import SideNav from "@/app/ui/dashboard/sidenav";
+
+export default function Layout({children}: {children: React.ReactNode}){
+    return (
+        <div className="flex h-screen flex-col md:flex-row md:overflow-hidden">
+            <div className="w-full flex-none md:w-64">
+                <SideNav />
+            </div>
+            <div className="flex-grow p-6 md:overflow-y-auto md:p-12">
+                { children }
+            </div>
+        </div>
+    );
+}
+```
+
+## Links
+By using the `<Link />` component instead of the HTML tag `<a>` you can to client-side-navigation without a full page reload.
+
+```tsx
+import Link from 'next/link';
+
+export default function NavLinks() {
+  return (
+    <Link
+    key={link.name}
+    href={link.href}
+    className="flex h-[48px] grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3"
+    >
+    <LinkIcon className="w-6" />
+    <p className="hidden md:block">{link.name}</p>
+    </Link>
+  );
+}
+```
+
+Next.js prefetches the content of the pages linked via `<Link />` so that it can a switch between the pages is faster respectly nearly instant.
+
+To show the currently active link the React hook `usePathname` can be used. To use conditons for changing the css classes you can use `clsx`.
+Example:
+```tsx
+import Link from 'next/link';
+import {usePathname} from 'next/navigation';
+import clsx from 'clsx';
+
+export default function NavLinks() {
+  const pathname = usePathname();
+
+  return (
+    <>
+      {links.map((link) => {
+        const LinkIcon = link.icon;
+        return (
+          <Link
+            key={link.name}
+            href={link.href}
+            className={clsx(
+              "flex h-[48px] grow items-center justify-center gap-2 rounded-md bg-gray-50 p-3 text-sm font-medium hover:bg-sky-100 hover:text-blue-600 md:flex-none md:justify-start md:p-2 md:px-3",
+              {
+                'bg-sky-100 text-blue-600': pathname === link.href,
+              },
+            )}
+          >
+            <LinkIcon className="w-6" />
+            <p className="hidden md:block">{link.name}</p>
+          </Link>
+        );
+      })}
+    </>
+  );
+}
+```
+
 ## Ressources
 - [Next.js Installation](https://nextjs.org/docs/app/getting-started/installation)
 - [Next.js React Foundations Course](https://nextjs.org/learn/react-foundations)

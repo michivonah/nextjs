@@ -79,6 +79,19 @@ The main function of the app or just a file is defined by `export default`.
 
 The layout of the app is defined in `layout.js`. The content of `layout.js` is shared between all pages.
 
+## Imports
+When importing function and components from other files, there can be named & default imports. Default imports are when you import the default function of a file which was defined by `export default function`.
+
+Default import
+```tsx
+import LatestInvoices from '../ui/dashboard/latest-invoices';
+```
+
+Named import
+```tsx
+import { fetchRevenue } from '../lib/data';
+```
+
 ## Styling
 In `global.css` some global CSS styling rules were defined. Usally this file is imported in the root layout of the app `layout.js`/`layout.jsx`/`layout.tsx`.
 
@@ -315,6 +328,54 @@ export default function NavLinks() {
   );
 }
 ```
+
+## Data rendering behaviors
+There are two ways of fetching data in Next.js.
+- static rendering
+- dynamic rendering
+
+Static rendering means that data is fetch while building the app or when the data is revalidating. On each access the cached data will be served. This has the advantage, that the server load can be reduced and the app is faster. Also it has advantages in point of SEO, because there has nothing to be loaded from the server except the page itself.
+
+But this approach isn't useful when personalized data should be shown. There comes dynamic rendering into play.
+Dynamic rendering enables to render real time data and personalized content for each user. It's also possible to show infos about the request.
+
+### Data streaming
+Data streaming enables you to transfer data to the client in more smaller chunks instead of one full package. So the users see the content, that is already ready and in the background the rest is loaded. So the app feels faster and the user can begin using it earlier. Also the data can be rendered in parellel, instead of waiting until each request is finished.
+
+By adding a `loading.tsx`-File with a `Loading()` component to the app, the streaming can be enabled.
+```tsx
+export default function Loading(){
+    return <div>Loading...</div>;
+}
+```
+
+The component `Loading()` is shown as a fallback while the "real" content is loaded.
+
+Instead of ugly text a skeleton can be implemented. This has the advantage that the user knows where he can expect content and layout shift is minimized.
+
+This loading behaviour is applied to all subpages of the folder its defined in. To prevent this the files, on which it should be appended, can be moved inside a folder in parenthesis. Folders with parenthesis allows to group pages logical, without affecting the URL path.
+
+With `Suspense` its also possible to just add a skeleton to one component. Then the data fetching process has to be a part of the component. To use `Suspense` the component has to be wrapped inside it.
+
+```tsx
+import { Suspense } from 'react';
+import { RevenueChartSkeleton } from '@/app/ui/skeletons';
+
+export default async function Page(){
+    return (
+        <main>
+            <div className='mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-8'>
+                <Suspense fallback={<RevenueChartSkeleton />}>
+                    <RevenueChart />
+                </Suspense>
+                <LatestInvoices latestInvoices={latestInvoices} />
+            </div>
+        </main>
+    );
+}
+```
+
+When multiple components should load at the same time, they should be moved in a own component and then be put into `Suspense`.
 
 ## Ressources
 - [Next.js Installation](https://nextjs.org/docs/app/getting-started/installation)

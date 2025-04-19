@@ -129,6 +129,9 @@ When non existing tailwind class matches the value you need, a custom value can 
 | group | defines a parent element for a group |
 | group-hover:<CLASS> | adds a class on hover over the parent of the group |
 | dark:<CLASS> | only apply styling in dark mode |
+| md:<CLASS> | media query for desktop devices |
+| hidden | display: none; |
+| block | display: block; |
 
 Tailwind uses a custom spacing scale. The translation table can be found [here](https://gist.github.com/crswll/5d91b14373f53d66317e407bbba6d3dd).
 
@@ -210,6 +213,30 @@ export default function RootLayout({
 ```
 
 The same way other fonts can be imported and also just applied on single objects.
+
+## Images
+Next.js comes with a built-in image component, which does many image optimizations like serving images as `webp` or `avif` where possible, automatically.
+
+The componennt is called `<Image>`.
+
+Example usage:
+```tsx
+import Image from 'next/image';
+
+export default function Page() {
+  return (
+          <Image
+            src="/hero-desktop.png"
+            width={1000}
+            height={760}
+            className="block"
+            alt="just an example"
+          />
+  );
+}
+```
+
+The `width` and `height` should be specified to prevent layout shift - the values set are just used for defining the right aspect ratio - Next.js decides by itself which size has to be rendered.
 
 ## Ressources
 - [Next.js Installation](https://nextjs.org/docs/app/getting-started/installation)

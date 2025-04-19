@@ -184,6 +184,33 @@ import { FaPlay } from "react-icons/fa";
 <FaPlay />
 ```
 
+## Fonts
+Fonts are managed in the file `/app/ui/fonts.ts`. Next.js is be default able to import fonts from Google Fonts. After importing a font the subset has to be defined. In my case its the latin subset.
+```ts
+import { Inter } from 'next/font/google';
+export const inter = Inter({subsets: ['latin'], weight: ['400', '700']});
+```
+
+Afterwards the font can be added to the `layout.tsx` so its visible all over the application.
+There also a `className` has to be added to the body, so that the font will be rendered.
+```tsx
+import {inter} from '@/app/ui/fonts';
+
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <html lang="en">
+      <body className={`${inter.className} antialiased`}>{children}</body>
+    </html>
+  );
+}
+```
+
+The same way other fonts can be imported and also just applied on single objects.
+
 ## Ressources
 - [Next.js Installation](https://nextjs.org/docs/app/getting-started/installation)
 - [Next.js React Foundations Course](https://nextjs.org/learn/react-foundations)

@@ -79,6 +79,8 @@ The main function of the app or just a file is defined by `export default`.
 
 The layout of the app is defined in `layout.js`. The content of `layout.js` is shared between all pages.
 
+Variables in `TypeScript` can be optional. Optinal variables are declared with a traling question mark (?) after the variables name. Eg. `x?: number`.
+
 ## Imports
 When importing function and components from other files, there can be named & default imports. Default imports are when you import the default function of a file which was defined by `export default function`.
 
@@ -377,9 +379,101 @@ export default async function Page(){
 
 When multiple components should load at the same time, they should be moved in a own component and then be put into `Suspense`.
 
+## Search function
+When you want to implement a search function the following Next.js hooks are benefical. When implementing the search feature the search query should be kept in the URL parameters. This makes it easier to get the search query and also allows users to bookmark or share a URL with a specific search term. The search filed should be implemented on the client side, so that the URL parameters easily can be changed.
+
+Example implementation of a search component (client side)
+```tsx
+'use client';
+
+import { MagnifyingGlassIcon } from '@heroicons/react/24/outline';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+
+export default function Search({ placeholder }: { placeholder: string }) {
+  const searchParams = useSearchParams();
+  const pathname = usePathname();
+  const { replace } = useRouter();
+
+  function handleSearch(term: string){
+    const params = new URLSearchParams(searchParams);
+    
+    if (term){
+      params.set('query', term);
+    }
+    else{
+      params.delete('query');
+    }
+
+    replace(`${pathname}?${params.toString()}`);
+  }
+
+  return (
+    <div className="relative flex flex-1 flex-shrink-0">
+      <label htmlFor="search" className="sr-only">
+        Search
+      </label>
+      <input
+        className="peer block w-full rounded-md border border-gray-200 py-[9px] pl-10 text-sm outline-2 placeholder:text-gray-500"
+        placeholder={placeholder}
+        onChange={(e) => {
+          handleSearch(e.target.value);
+        }}
+        defaultValue={searchParams.get('query')?.toString()}
+      />
+      <MagnifyingGlassIcon className="absolute left-3 top-1/2 h-[18px] w-[18px] -translate-y-1/2 text-gray-500 peer-focus:text-gray-900" />
+    </div>
+  );
+}
+```
+
+When implementing a feature that requires access to the search parameters it depends where the code is excuted. To access the search parameters on the client side `useSearchParams()` from `'next/navigation'` is used. On the server's side you need to pass the prop `searchParams` to the according function.
+
+Server side example
+```tsx
+export default async function Page(props: {
+    searchParams?: Promise<{
+        query?: string;
+        page?: string;
+    }>;
+}){
+
+    const searchParams = await props.searchParams;
+    const query = searchParams?.query || '';
+    const currentPage = Number(searchParams?.page) || 1;
+    
+    return (
+        // return your components
+    )
+}
+```
+
+By implementing a search function this way, every time a user starts typing the search will be queried on each keystroke. This ressolves into a lot requests and unneeded requests. To change this behaviour `Debouncing` can be implemented. `Deboucing` implements a limit to the rate how many queries can be fired.
+
+`Debouncing` can be implemented in a lot of ways. There is a library named `use-debounce` which does it for you. To use it, the search function has to be wrapped into a debounced callback. Here a simple example:
+```tsx
+const handleSearch = useDebouncedCallback((term) => {
+console.log(`Searching... ${term}`)
+
+const params = new URLSearchParams(searchParams);
+
+if (term){
+    params.set('query', term);
+}
+else{
+    params.delete('query');
+}
+
+replace(`${pathname}?${params.toString()}`);
+}, 300);
+```
+
+Then before the partenthisis a time to wait before firing the request can be set. In the example it was `300ms`.
+
+
 ## Ressources
 - [Next.js Installation](https://nextjs.org/docs/app/getting-started/installation)
 - [Next.js React Foundations Course](https://nextjs.org/learn/react-foundations)
 - [Next.js Dashboard App Course](https://nextjs.org/learn/dashboard-app)
 - [Tailwind in 100 Seconds](https://youtu.be/mr15Xzb1Ook)
 - [Ultimate Tailwind CSS Tutorial // Build a Discord-inspired Animated Navbar](https://youtu.be/pfaSUYaSgRo)
+- [Why use Question Mark in TypeScript Variable? | GeeksforGeeks](https://www.geeksforgeeks.org/why-use-question-mark-in-typescript-variable/)

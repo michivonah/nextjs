@@ -52,34 +52,34 @@ Afterwards the site can be accessed in the browser at `http://localhost:3000`.
 
 
 ## General structure
-The whole app is organzied in multiple folders. THe typescript files for the app are stored in `src/app`.
+- The whole app is organzied in multiple folders. THe typescript files for the app are stored in `src/app`.
+- The code is written in TypeScript.
+- TypeScript provides the ability to define types (own structures with strings, numbers, etc.). Therefrom the name `TypeScript` comes. ;)
 
-The code is written in TypeScript.
+- In `package.json` are the dependencies saved. The Next.js configuration is saved in `next.config.ts`.
 
-In `package.json` are the dependencies saved. The Next.js configuration is saved in `next.config.ts`.
+- Each folder in `app` represents a route of the application, but its only accessable when a `page.js` or `route.js` file is contained.
 
-Each folder in `app` represents a route of the application, but its only accessable when a `page.js` or `route.js` file is contained.
+- When a folder is named with `_` as prefix, it will be ignored by the routing and not accessable from within the application.
 
-When a folder is named with `_` as prefix, it will be ignored by the routing and not accessable from within the application.
+- Folders in parenthesis (Klammern) while not be show in the route. (https://nextjs.org/docs/app/getting-started/project-structure#organize-routes-without-affecting-the-url-path)
 
-Folders in parenthesis (Klammern) while not be show in the route. (https://nextjs.org/docs/app/getting-started/project-structure#organize-routes-without-affecting-the-url-path)
+- Slugs can be defined by creating a folder in brackets [] like [slug].
 
-Slugs can be defined by creating a folder in brackets [] like [slug].
+- By default the code is executed on the server. When you want to change this behavior the following has to be added to the top of the file:
+    ```tsx
+    'use client';
+    ```
 
-Basic tutorial: https://www.youtube.com/watch?v=__mSgDEOyv8
+- Its possible to render the most parts of an app on the server and some components, like the hover state of the navbar, on the client. Depending on what makes most sense for the application. Thoose components should be move to a separated JS or JSX file.
 
-By default the code is executed on the server. When you want to change this behavior the following has to be added to the top of the file:
-```tsx
-'use client';
-```
+- The main function of the app or just a file is defined by `export default`.
 
-Its possible to render the most parts of an app on the server and some components, like the hover state of the navbar, on the client. Depending on what makes most sense for the application. Thoose components should be move to a separated JS or JSX file.
+- The layout of the app is defined in `layout.js`. The content of `layout.js` is shared between all pages.
 
-The main function of the app or just a file is defined by `export default`.
+- Variables in `TypeScript` can be optional. Optinal variables are declared with a traling question mark (?) after the variables name. Eg. `x?: number`.
 
-The layout of the app is defined in `layout.js`. The content of `layout.js` is shared between all pages.
-
-Variables in `TypeScript` can be optional. Optinal variables are declared with a traling question mark (?) after the variables name. Eg. `x?: number`.
+- Inside a React component also empty HTML tags like `<>` and `</>` can be used for logical grouping of elements. This will have no impact on the DOM and is just for organization in the code.
 
 ## Imports
 When importing function and components from other files, there can be named & default imports. Default imports are when you import the default function of a file which was defined by `export default function`.
@@ -469,9 +469,112 @@ replace(`${pathname}?${params.toString()}`);
 
 Then before the partenthisis a time to wait before firing the request can be set. In the example it was `300ms`.
 
+## React Server Actions
+React Server Action allow to run code asynchronous on the server without the need of an api endpoint. They are focused on security by default.
+
+React Server Actions can be used to get the data from a submitted form. Its also possible to interact with the form even when the belonging javascript code hasn't been loaded.
+
+A file with server action could be named `actions.ts`. In the beginning of the file should be defined, that this file should be executed on the server.
+```ts
+'use server';
+```
+
+So this action will always be executed on the server, even if the function is called within a client run component.
+
+To run a server action as result of a form it has to be added as action to a form component.
+```tsx
+import { createInvoice } from '@/app/lib/actions';
+return(
+    <form action={createInvoice}>
+    </form>
+)
+```
+
+The received data can be processed on the server like in this example.
+```tsx
+'use server';
+
+export async function createInvoice(formData: FormData){
+    const rawFormData = {
+        customerId: formData.get('customerId'),
+        amount: formData.get('amount'),
+        status: formData.get('status'),
+    };
+}
+```
+
+> Note: Form inputs of `type="number"` will be sent as `string` to the server not as `number`.
+
+`Zod` is a library that does type validation in `TypeScript`.
+
+By adding the following code a Schema for the type validation can be defined.
+```tsx
+import { z } from 'zod';
+
+const FormSchema = z.object({
+    id: z.string(),
+    customerId: z.string(),
+    amount: z.coerce.number(),
+    status: z.enum(['pending', 'paid']),
+    date: z.string(),
+});
+
+const CreateInvoice = FormSchema.omit({id: true, date: true});
+```
+
+> The `z.corece` does transform the type of the value from `amount` to a `number`.
+
+Follwing code does a type validation before further processing the data with the before defined Schema.
+```tsx
+export async function createInvoice(formData: FormData){
+    const { customerId, amount, status } = CreateInvoice.parse({
+        customerId: formData.get('customerId'),
+        amount: formData.get('amount'),
+        status: formData.get('status'),
+    });
+}
+```
+
+### Revalidating data
+Next.js does cache the pages on the client side, so the app is overall faster. But when dynamic data is loaded and something has changed, the client has to know this, so the data can be fetched again. You can tell the client to revalidate his data by doing the following:
+
+```tsx
+import { revalidatePath } from 'next/cache';
+
+revalidatePath('/dashboard/invoices');
+```
+
+Afterwards the user can be redirect to the according route.
+```tsx
+import { redirect } from 'next/navigation';
+
+redirect('/dashboard/invoices');
+```
+
+## Dynamic routes
+A dynamic route is created by creating a folder in squrare brackets [].
+
+You can get the id of the page as part of the page's params.
+```tsx
+export default async function Page(props: {
+    params: Promise<{
+        id: string
+    }>
+}){
+    const params = await props.params;
+    const id = params.id;
+
+    return (
+        // Your component...
+    );
+}
+```
+
+
 
 ## Ressources
 - [Next.js Installation](https://nextjs.org/docs/app/getting-started/installation)
+- [Next.js 13 - The Basics](https://youtu.be/__mSgDEOyv8)
 - [Next.js React Foundations Course](https://nextjs.org/learn/react-foundations)
 - [Next.js Dashboard App Course](https://nextjs.org/learn/dashboard-app)
 - [Tailwind in 100 Seconds](https://youtu.be/mr15Xzb1Ook)

@@ -55,29 +55,34 @@ Afterwards the site can be accessed in the browser at `http://localhost:3000`.
 - The whole app is organzied in multiple folders. THe typescript files for the app are stored in `src/app`.
 - The code is written in TypeScript.
 - TypeScript provides the ability to define types (own structures with strings, numbers, etc.). Therefrom the name `TypeScript` comes. ;)
+- Types are named with capitalized letters, eg. `User` or `Invoice`.
+- A type can be defined with `export type <TYPENAME>`.
+    ```ts
+    export type User = {
+    id: string;
+    name: string;
+    email: string;
+    password: string;
+    };
+    ```
+- Variables in `TypeScript` can be optional. Optinal variables are declared with a traling question mark (?) after the variables name. Eg. `x?: number`.
 
 - In `package.json` are the dependencies saved. The Next.js configuration is saved in `next.config.ts`.
 
 - Each folder in `app` represents a route of the application, but its only accessable when a `page.js` or `route.js` file is contained.
-
 - When a folder is named with `_` as prefix, it will be ignored by the routing and not accessable from within the application.
-
 - Folders in parenthesis (Klammern) while not be show in the route. (https://nextjs.org/docs/app/getting-started/project-structure#organize-routes-without-affecting-the-url-path)
-
 - Slugs can be defined by creating a folder in brackets [] like [slug].
 
 - By default the code is executed on the server. When you want to change this behavior the following has to be added to the top of the file:
     ```tsx
     'use client';
     ```
-
 - Its possible to render the most parts of an app on the server and some components, like the hover state of the navbar, on the client. Depending on what makes most sense for the application. Thoose components should be move to a separated JS or JSX file.
 
 - The main function of the app or just a file is defined by `export default`.
 
 - The layout of the app is defined in `layout.js`. The content of `layout.js` is shared between all pages.
-
-- Variables in `TypeScript` can be optional. Optinal variables are declared with a traling question mark (?) after the variables name. Eg. `x?: number`.
 
 - Inside a React component also empty HTML tags like `<>` and `</>` can be used for logical grouping of elements. This will have no impact on the DOM and is just for organization in the code.
 
@@ -524,6 +529,21 @@ const CreateInvoice = FormSchema.omit({id: true, date: true});
 
 > The `z.corece` does transform the type of the value from `amount` to a `number`.
 
+It's also possible to define error messages in `Zod`, which can be retrieved by a client (the matching function have to be implemented).
+```tsx
+const FormSchema = z.object({
+    id: z.string(),
+    customerId: z.string({
+        invalid_type_error: 'Please select a customer.',
+    }),
+    amount: z.coerce.number().gt(0, { message: 'Please enter an amount greater than $0.'}),,
+    status: z.enum(['pending', 'paid'], {
+        invalid_type_error: 'Please select an invoice status.',
+    }),
+    date: z.string(),
+});
+```
+
 Follwing code does a type validation before further processing the data with the before defined Schema.
 ```tsx
 export async function createInvoice(formData: FormData){
@@ -534,6 +554,9 @@ export async function createInvoice(formData: FormData){
     });
 }
 ```
+
+### Form validation
+The content of a form should be validated, so a user only can submit a valid form. This can be done on the client side or on the server side. To prohibt manipulation on the client and havin in general more control the server side validation can be used. When the data is validated on the server before processing, a client side form validation for better UX is also okay.
 
 ### Revalidating data
 Next.js does cache the pages on the client side, so the app is overall faster. But when dynamic data is loaded and something has changed, the client has to know this, so the data can be fetched again. You can tell the client to revalidate his data by doing the following:

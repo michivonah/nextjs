@@ -570,6 +570,74 @@ export default async function Page(props: {
 }
 ```
 
+## Error handling
+Error handling works in `TypeScript` the same way like in JS.
+```tsx
+try{
+    await sql`DELETE FROM invoices WHERE id = ${id}`;
+} catch (error){
+    console.error(error);
+}
+```
+
+> Redirects have to be outside of a try & catch block, becuase a redirect would cause to trigger a error each time it's executed.
+
+A error also can be thrown manually by using `throw`.
+```tsx
+throw new Error('Failed to delete invoice.');
+```
+
+To show an error also to the user instead only on the server you can add a `error.tsx` file. This file needs to be a client component.
+
+Here is a simple example for a such error page:
+```tsx
+'use client';
+ 
+import { useEffect } from 'react';
+ 
+export default function Error({
+  error,
+  reset,
+}: {
+  error: Error & { digest?: string };
+  reset: () => void;
+}) {
+  useEffect(() => {
+    // Optionally log the error to an error reporting service
+    console.error(error);
+  }, [error]);
+ 
+  return (
+    <main className="flex h-full flex-col items-center justify-center">
+      <h2 className="text-center">Something went wrong!</h2>
+      <button
+        className="mt-4 rounded-md bg-blue-500 px-4 py-2 text-sm text-white transition-colors hover:bg-blue-400"
+        onClick={
+          // Attempt to recover by trying to re-render the invoices route
+          () => reset()
+        }
+      >
+        Try again
+      </button>
+    </main>
+  );
+}
+```
+
+It's also possible to create separate error pages for specific errors. An example would be a not found page.
+
+A redirect to a not found page can be implemented with `notFound` from `next/navigation`.
+
+```tsx
+import { notFound } from 'next/navigation';
+
+if(!invoice){
+    notFound();
+}
+```
+
+Therefor the file `not-found.tsx` should be created with the UI you want to show, when something is not found.
+Thoose specific error pages will be shown before the general error page.
 
 
 ## Ressources

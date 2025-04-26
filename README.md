@@ -50,6 +50,14 @@ npm run dev
 Afterwards the site can be accessed in the browser at `http://localhost:3000`.
 ![New Next.js project](./docs/installation/empty_next_js_app.jpg)
 
+## pnpm
+`pnpm` is a faster and more efficient packet manager for `Node.js` than `npm`. It is recommended by `Next.js`.
+
+Install `pnpm`
+```zsh
+npm install -g pnpm
+```
+
 
 ## General structure
 - The whole app is organzied in multiple folders. THe typescript files for the app are stored in `src/app`.
@@ -661,6 +669,123 @@ if(!invoice){
 
 Therefor the file `not-found.tsx` should be created with the UI you want to show, when something is not found.
 Thoose specific error pages will be shown before the general error page.
+
+## Authentication
+`NextAuth.js` or `Auth.js` is a popular library for implementing authentication into a `Next.js` application. This library takes away the most complexitiy and effort in building a robust authentication system from scratch.
+
+Install `Auth.js`:
+```tsx
+pnpm i next-auth@beta
+```
+
+Before using `Auth.js` it's required to generate a secret. This can be done with following command:
+```zsh
+openssl rand -base64 32
+```
+
+Than this values has to be added to the `.env`-File as `AUTH_SECRET=<SECRET>`.
+
+The secret will be used to encrypt cookies for the user sessions.
+
+To configure the authentication a file `auth.config.ts` has to be created in the root directory of the app.
+This file has to export a object with the config.
+
+Example:
+```ts
+import type { NextAuthConfig } from 'next-auth';
+
+export const authConfig = {
+    pages: {
+        signIn: '/login',
+    },
+} satisfies NextAuthConfig;
+```
+
+But now the app routes aren't protect and everyone can access them. This can be changed by adding callbacks to `auth.config.ts` which control the pages that need authorization.
+```ts
+import type { NextAuthConfig } from 'next-auth';
+ 
+export const authConfig = {
+  pages: {
+    signIn: '/login',
+  },
+  callbacks: {
+    authorized({ auth, request: { nextUrl } }) {
+      const isLoggedIn = !!auth?.user;
+      const isOnDashboard = nextUrl.pathname.startsWith('/dashboard');
+      if (isOnDashboard) {
+        if (isLoggedIn) return true;
+        return false;
+      } else if (isLoggedIn) {
+        return Response.redirect(new URL('/dashboard', nextUrl));
+      }
+      return true;
+    },
+  },
+  providers: [],
+} satisfies NextAuthConfig;
+```
+
+Next a middleware has to be created. This is defined in a file `middleware.ts` in the project's root.
+```ts
+import NextAuth from 'next-auth';
+import { authConfig } from './auth.config';
+ 
+export default NextAuth(authConfig).auth;
+ 
+export const config = {
+  // https://nextjs.org/docs/app/building-your-application/routing/middleware#matcher
+  matcher: ['/((?!api|_next/static|_next/image|.*\\.png$).*)'],
+};
+```
+
+Additonal a `auth.ts` file is needed. This could look like this:
+```ts
+import NextAuth from 'next-auth';
+import { authConfig } from './auth.config';
+import Credentials from 'next-auth/providers/credentials';
+import { z } from 'zod';
+import type { User } from '@/app/lib/definitions';
+import bcrypt from 'bcrypt';
+import postgres from 'postgres';
+ 
+const sql = postgres(process.env.POSTGRES_URL!, { ssl: 'require' });
+
+async function getUser(email: string): Promise<User | undefined> {
+    try{
+        const user = await sql<User[]>`SELECT * FROM users WHERE email=${email}`;
+        return user[0];
+    } catch(error){
+        console.error('Failed to fetch user:', error);
+        throw new Error('Failed to fetch user.');
+    }
+}
+
+export const { auth, signIn, signOut } = NextAuth({
+  ...authConfig,
+  providers: [Credentials({
+    async authorize(credentials){
+        const parsedCredentials = z
+        .object({ email: z.string().email(), password: z.string().min(6)})
+        .safeParse(credentials);
+
+        if(parsedCredentials.success){
+            const { email, password } = parsedCredentials.data;
+            const user = await getUser(email);
+            if(!user) return null;
+            const passwordsMatch = await bcrypt.compare(password, user.password);
+
+            if(passwordsMatch) return user;
+        }
+        
+        console.log('Invalid credentials');
+        return null;
+    },
+  })],
+});
+````
+
+More details about the authentication can be found in the [Next.js course](https://nextjs.org/learn/dashboard-app/adding-authentication).
 
 
 ## Ressources

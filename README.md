@@ -783,9 +783,46 @@ export const { auth, signIn, signOut } = NextAuth({
     },
   })],
 });
-````
+```
 
 More details about the authentication can be found in the [Next.js course](https://nextjs.org/learn/dashboard-app/adding-authentication).
+
+## Metadata
+Metadata can be defined by adding and exporting a metadata const to the `layout.tsx` file.
+```tsx
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Acme Dashboard',
+  description: 'The official Next.js Course Dashboard, built with App Router.',
+  metadataBase: new URL('http://localhost:3000/dashboard'),
+}
+```
+
+The metadata defined in `layout.tsx` will be used globally across all pages. They can also be overwritten for a specific page by adding the metadata const to those page's `page.tsx`-File.
+
+It's also possible to use templates in metadata, so things like the app's name can be set globally but the page title is indivudal.
+```tsx
+import { Metadata } from 'next';
+ 
+export const metadata: Metadata = {
+  title: {
+    template: '%s | Acme Dashboard',
+    default: 'Acme Dashboard',
+  },
+  description: 'The official Next.js Learn Dashboard built with App Router.',
+  metadataBase: new URL('https://next-learn-dashboard.vercel.sh'),
+};
+```
+
+With this template the following title is just enough per page.
+```tsx
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Invoices',
+};
+```
 
 
 ## Ressources

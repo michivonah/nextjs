@@ -94,6 +94,23 @@ npm install -g pnpm
 
 - Inside a React component also empty HTML tags like `<>` and `</>` can be used for logical grouping of elements. This will have no impact on the DOM and is just for organization in the code.
 
+- In TypeScript its possible to define a const/variable with a promise. A Promise makes it possible to define a data type while while the value is the result of a async function and will be set once the function has finished it's execution.
+  ```tsx
+  const myPromise: Promise<string> = new Promise((resolve, reject) => {});
+  ```
+
+  Its possible to wait until the value is there to execute a following action. This can be done with the `.then()` and the `.promise()` methods.
+  ```tsx
+  myPromise
+  .then((value) => {
+    console.log('Promise resolved with value: ' + value);
+  })
+  .catch((error) => {
+    console.error('Promise rejected with error: ' + error);
+  });
+
+  ```
+
 ## Imports
 When importing function and components from other files, there can be named & default imports. Default imports are when you import the default function of a file which was defined by `export default function`.
 
@@ -833,3 +850,4 @@ export const metadata: Metadata = {
 - [Tailwind in 100 Seconds](https://youtu.be/mr15Xzb1Ook)
 - [Ultimate Tailwind CSS Tutorial // Build a Discord-inspired Animated Navbar](https://youtu.be/pfaSUYaSgRo)
 - [Why use Question Mark in TypeScript Variable? | GeeksforGeeks](https://www.geeksforgeeks.org/why-use-question-mark-in-typescript-variable/)
+- [TypeScript | Promises | Codecademy](https://www.codecademy.com/resources/docs/typescript/promises)
